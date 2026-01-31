@@ -51,6 +51,7 @@ class g1_locomimic_beyondmimic(G1RlLocoMimicPipelineCfg):
                 "[": "[POLICY_MIMIC]",
                 ";": "[POLICY_SWITCH],NEXT",
                 "'": "[POLICY_SWITCH],LAST",
+                "p": "[MOTION_FADE_IN]",
             }
         ),
         # JoystickCtrlCfg(
@@ -97,6 +98,7 @@ class g1_locomimic_asap(G1RlLocoMimicPipelineCfg):
                 "[": "[POLICY_MIMIC]",
                 ";": "[POLICY_SWITCH],NEXT",
                 "'": "[POLICY_SWITCH],LAST",
+                
             }
         ),
         # JoystickCtrlCfg(

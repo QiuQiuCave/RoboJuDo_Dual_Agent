@@ -111,7 +111,7 @@ class BeyondMimicPolicy(Policy):
             self.pbar = ProgressBar(f"Beyondmimic {self.cfg_policy.policy_name}", self.max_timestep)
         else:
             self.pbar = None
-        self.play_speed: float = 1.0
+        self.play_speed: float = 0.0
         self.flag_motion_done = False
         self._prepare_policy()
 
