@@ -245,6 +245,36 @@ class BeyondMimicPolicyCfg(PolicyCfg):
         return self
 
 
+class DualAgentPolicyCfg(PolicyCfg):
+    policy_type: str = "DualAgentPolicy"
+    disable_autoload: bool = True
+
+    policy_name: str
+    mode: str = "basic"  # basic | motion
+
+    upper_obs_dim: int = 480
+    lower_obs_dim: int = 121
+
+    action_scale: float = 0.25
+
+    @property
+    def policy_file(self) -> str:
+        policy_file = ASSETS_DIR / f"models/{self.robot}/dual_agent/{self.policy_name}.onnx"
+        return policy_file.as_posix()
+
+    @field_validator("mode")
+    def check_mode(cls, v):
+        if v not in {"basic", "motion"}:
+            raise ValueError("mode must be 'basic' or 'motion'")
+        return v
+
+    @model_validator(mode="after")
+    def check_obs_dims(self):
+        if self.upper_obs_dim <= 0 or self.lower_obs_dim <= 0:
+            raise ValueError("upper_obs_dim and lower_obs_dim must be positive")
+        return self
+
+
 class AsapPolicyCfg(PolicyCfg):
     policy_type: str = "AsapPolicy"
     disable_autoload: bool = True

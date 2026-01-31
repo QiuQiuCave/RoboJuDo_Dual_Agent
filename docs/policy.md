@@ -14,6 +14,7 @@ We provide the following policies:
 - [H2HStudentPolicy](#policy--h2hstudentpolicy)
 - [HugWBCPolicy](#policy--hugwbcpolicy)
 - [BeyondMimicPolicy](#policy--beyondmimicpolicy)
+- [DualAgentPolicy](#policy--dualagentpolicy)
 - [ASAPPolicy](#policy--asappolicy)
 - [KungfuBotGeneralPolicy](#policy--kungfubotgeneralpolicy)
 - [TwistPolicy](#policy--twistpolicy)
@@ -119,6 +120,58 @@ script: [beyondmimic_policy.py](../robojudo/policy/beyondmimic_policy.py)
 .
 
  You can refer to `g1_beyondmimic` and `g1_beyondmimic_with_ctrl` in [g1_cfg.py](../robojudo/config/g1/g1_cfg.py) for details.
+
+## [Policy](#policy) > [DualAgentPolicy](#policy--dualagentpolicy)
+
+`DualAgentPolicy` runs a Dual Agent ONNX (basic or motion mode) with separate `upper_obs` and `lower_obs` inputs.
+
+script: [dual_agent_policy.py](../robojudo/policy/dual_agent_policy.py)
+
+`DualAgentPolicyCfg` is defined in [policy_cfgs.py](../robojudo/policy/policy_cfgs.py) and should point to:
+- `assets/models/g1/dual_agent/{policy_name}.onnx`
+
+### Input / Output Format
+
+Inputs (float32):
+- `upper_obs`: shape `[1, upper_obs_dim]` (default 480)
+- `lower_obs`: shape `[1, lower_obs_dim]` (default 121; some basic models use 99)
+- `time_step`: optional, shape `[1, 1]` (used by Motion Mode if exported)
+
+Outputs:
+- `actions`: shape `[1, 29]` (joint offsets; PolicyWrapper adds default positions)
+- Motion Mode may also output `joint_pos`, `joint_vel`, `body_pos_w`, `body_quat_w` (saved into `extras`)
+
+### Basic vs Motion Mode
+
+- **Basic Mode**: only consumes `upper_obs`/`lower_obs` and outputs `actions`.
+- **Motion Mode**: may also consume `time_step` and returns reference motion signals (e.g., joint and body states).
+
+### Inference Example
+
+```python
+import numpy as np
+import onnxruntime as ort
+
+sess = ort.InferenceSession("assets/models/g1/dual_agent/agent_motion.onnx", providers=["CPUExecutionProvider"])
+upper_obs = np.zeros((1, 480), dtype=np.float32)
+lower_obs = np.zeros((1, 121), dtype=np.float32)
+inputs = {
+    "upper_obs": upper_obs,
+    "lower_obs": lower_obs,
+    "time_step": np.array([[0.0]], dtype=np.float32),
+}
+actions = sess.run(["actions"], inputs)[0]
+```
+
+### Run Demo
+
+```bash
+python scripts/run_pipeline.py -c g1_dual_agent_basic
+```
+
+```bash
+python scripts/run_pipeline.py -c g1_dual_agent_motion
+```
 
 ## [Policy](#policy) > [AsapPolicy](#policy--asappolicy)
 

@@ -24,6 +24,7 @@ from .env.g1_real_env_cfg import G1RealEnvCfg, G1UnitreeCfg  # noqa: F401
 from .policy.g1_amo_policy_cfg import G1AmoPolicyCfg  # noqa: F401
 from .policy.g1_asap_policy_cfg import G1AsapLocoPolicyCfg, G1AsapPolicyCfg  # noqa: F401
 from .policy.g1_beyondmimic_policy_cfg import G1BeyondMimicPolicyCfg  # noqa: F401
+from .policy.g1_dual_agent_policy_cfg import G1DualAgentPolicyCfg  # noqa: F401
 from .policy.g1_h2h_policy_cfg import G1H2HPolicyCfg  # noqa: F401
 from .policy.g1_kungfubot_policy_cfg import G1KungfuBotGeneralPolicyCfg, G1KungfuBotPolicyCfg  # noqa: F401
 from .policy.g1_smooth_policy_cfg import G1SmoothPolicyCfg  # noqa: F401
@@ -140,6 +141,41 @@ class g1_locomimic(RlLocoMimicPipelineCfg):
     ]
 
 
+@cfg_registry.register
+class g1_locomimic_dual_agent(RlLocoMimicPipelineCfg):
+    """
+    Loco -> DualAgent mimic switch with interpolation.
+    """
+
+    robot: str = "g1"
+    env: G1MujocoEnvCfg = G1MujocoEnvCfg()
+
+    ctrl: list[KeyboardCtrlCfg | JoystickCtrlCfg] = [
+        KeyboardCtrlCfg(
+            triggers_extra={
+                "]": "[POLICY_LOCO]",
+                "[": "[POLICY_MIMIC]",
+            }
+        ),
+        JoystickCtrlCfg(
+            triggers_extra={
+                "RB+Down": "[POLICY_LOCO]",
+                "RB+Up": "[POLICY_MIMIC]",
+            }
+        ),
+    ]
+
+    loco_policy: G1UnitreePolicyCfg = G1UnitreePolicyCfg()
+    mimic_policies: list[G1DualAgentPolicyCfg] = [
+        G1DualAgentPolicyCfg(
+            policy_name="dual_agent_motion",
+            mode="motion",
+            upper_obs_dim=480,
+            lower_obs_dim=99,
+        ),
+    ]
+
+
 # ======================== Configs for supported Policy ======================== #
 
 
@@ -198,6 +234,46 @@ class g1_beyondmimic_with_ctrl(RlPipelineCfg):
     policy: G1BeyondMimicPolicyCfg = G1BeyondMimicPolicyCfg(
         policy_name="Dance_wose",
         use_motion_from_model=False,  # use motion from BeyondmimicCtrl instead of the onnx
+    )
+
+
+@cfg_registry.register
+class g1_dual_agent_basic(RlPipelineCfg):
+    """
+    Dual Agent ONNX (Basic Mode).
+    """
+
+    robot: str = "g1"
+    env: G1MujocoEnvCfg = G1MujocoEnvCfg()
+    ctrl: list[KeyboardCtrlCfg] = [
+        KeyboardCtrlCfg(),
+    ]
+
+    policy: G1DualAgentPolicyCfg = G1DualAgentPolicyCfg(
+        policy_name="agent_basic",
+        mode="basic",
+        upper_obs_dim=480,
+        lower_obs_dim=121,
+    )
+
+
+@cfg_registry.register
+class g1_dual_agent_motion(RlPipelineCfg):
+    """
+    Dual Agent ONNX (Motion Mode).
+    """
+
+    robot: str = "g1"
+    env: G1MujocoEnvCfg = G1MujocoEnvCfg()
+    ctrl: list[KeyboardCtrlCfg] = [
+        KeyboardCtrlCfg(),
+    ]
+
+    policy: G1DualAgentPolicyCfg = G1DualAgentPolicyCfg(
+        policy_name="dual_agent_motion",
+        mode="motion",
+        upper_obs_dim=480,
+        lower_obs_dim=99,
     )
 
 
